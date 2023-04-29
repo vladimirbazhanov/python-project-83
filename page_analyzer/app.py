@@ -1,8 +1,15 @@
-from flask import Flask
-from flask import render_template
+import pdb
+import os
 
+from flask import Flask, request, flash, redirect, render_template
+from dotenv import load_dotenv
+import psycopg
+
+from page_analyzer.site import Site
+load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.environ['SECRET_KEY']
 
 
 @app.route('/')
@@ -12,4 +19,21 @@ def get_index():
 
 @app.post('/urls')
 def post_urls():
-    return render_template('index.html')
+    url = request.form.get('url')
+    if not url:
+        flash('Пожалуйста, введите адрес сайта!', 'warning')
+        return redirect('/')
+    else:
+        site = Site(url)
+        if not site.is_valid():
+            flash('Адрес сайта некорректен, введите снова!', 'warning')
+            return redirect('/')
+        else:
+            try:
+                site.save()
+            except psycopg.errors.UniqueViolation:
+                flash('Сайт уже есть в базе данных!', 'warning')
+                return redirect('/')
+
+        return render_template('index.html')
+
