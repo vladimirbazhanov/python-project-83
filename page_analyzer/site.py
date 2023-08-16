@@ -9,6 +9,20 @@ class Site:
     def __init__(self, url):
         self.url = url
 
+    @staticmethod
+    def all():
+        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name FROM urls ORDER BY created_at DESC
+                    """
+                )
+                result = cur.fetchall()
+
+        return result
+
+
     def is_valid(self):
         return validators.url(self.url) and validators.length(self.url, max=255)
 

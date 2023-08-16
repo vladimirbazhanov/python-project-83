@@ -19,7 +19,9 @@ def get_index():
 
 @app.get('/urls')
 def get_urls():
-    return render_template('urls.html')
+    urls = Site.all()
+
+    return render_template('urls.html', urls=urls)
 
 
 @app.post('/urls')
@@ -39,6 +41,8 @@ def post_urls():
             except psycopg.errors.UniqueViolation:
                 flash('Сайт уже есть в базе данных!', 'warning')
                 return redirect('/')
+            finally:
+                flash('Сайт успешно добавлен!', 'info')
 
         return render_template('index.html')
 
