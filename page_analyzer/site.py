@@ -15,10 +15,24 @@ class Site:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, name FROM urls ORDER BY created_at DESC
+                    SELECT id, name, created_at FROM urls ORDER BY created_at DESC
                     """
                 )
                 result = cur.fetchall()
+
+        return result
+
+
+    @staticmethod
+    def find(id):
+        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, created_at FROM urls WHERE id = %s
+                    """, (id, )
+                )
+                result = cur.fetchone()
 
         return result
 
@@ -36,7 +50,7 @@ class Site:
                 cur.execute(
                     """
                         INSERT INTO urls (name, created_at) VALUES (%s, %s)
-                    """, (url, created_at))
+                    """, (url, created_at, ))
                 conn.commit()
 
     def normalized_url(self):

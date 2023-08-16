@@ -17,6 +17,13 @@ def get_index():
     return render_template('index.html')
 
 
+@app.route('/urls/<id>')
+def get_url(id):
+    url = Site.find(id)
+
+    return render_template('url.html', url=url)
+
+
 @app.get('/urls')
 def get_urls():
     urls = Site.all()

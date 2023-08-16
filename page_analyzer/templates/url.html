@@ -27,23 +27,21 @@
     <div class="container p-4">
       <div class="row">
         <div class="col-md-12">
-          <h1>Сайты</h1>
-          <table class="table" data-test="urls">
-            <thead>
-              <th>ID</th>
-              <th>Адрес</th>
-            </thead>
+          <h1>Сайт: url[1]</h1>
+          <table class="table" data-test="url">
             <tbody>
-              {% for url in urls %}
-              <tr>
-                <td>
-                  {{ url[0] }}
-                </td>
-                <td>
-                  {{ url[1] }}
-                </td>
-              </tr>
-              {% endfor %}
+                <tr>
+                    <td>ID</td>
+                    <td>{{ url[0] }}</td>
+                </tr>
+                <tr>
+                    <td>Имя</td>
+                    <td>{{ url[1] }}</td>
+                </tr>
+                <tr>
+                    <td>Добавлен</td>
+                    <td>{{ url[2] }}</td>
+                </tr>
             </tbody>
           </table>
         </div>
