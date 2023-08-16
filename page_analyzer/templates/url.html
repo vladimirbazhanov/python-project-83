@@ -54,7 +54,29 @@
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
           </form>
 
+          <table class="table">
+            <thead>
+              <th>ID</th>
+              <th>Код ответа</th>
+              <th>h1</th>
+              <th>title</th>
+              <th>description</th>
+              <th>Дата создания</th>
+            </thead>
+            <tbody>
+              {% for url_check in url_checks %}
+                <tr>
+                  <td>{{ url_check[0] }}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>{{ url_check[1] }}</td>
+                </tr>
+              {% endfor %}
 
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

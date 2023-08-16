@@ -1,4 +1,3 @@
-import pdb
 import os
 
 from flask import Flask, request, flash, redirect, render_template
@@ -19,11 +18,12 @@ def get_index():
     return render_template('index.html')
 
 
-@app.route('/urls/<id>')
-def get_url(id):
-    url = Site.find(id)
+@app.route('/urls/<url_id>')
+def get_url(url_id):
+    url = Site.find(url_id)
+    url_checks = SiteCheck.find_by_url_id(url_id)
 
-    return render_template('url.html', url=url)
+    return render_template('url.html', url=url, url_checks=url_checks)
 
 
 @app.post('/urls/<url_id>/checks')
@@ -63,4 +63,3 @@ def post_urls():
 
     flash('Сайт успешно добавлен!', 'info')
     return render_template('index.html')
-

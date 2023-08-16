@@ -15,13 +15,14 @@ class Site:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, name, created_at FROM urls ORDER BY created_at DESC
+                    SELECT id, name, created_at
+                    FROM urls
+                    ORDER BY created_at DESC
                     """
                 )
                 result = cur.fetchall()
 
         return result
-
 
     @staticmethod
     def find(id):
@@ -36,10 +37,9 @@ class Site:
 
         return result
 
-
     def is_valid(self):
-        return validators.url(self.url) and validators.length(self.url, max=255)
-
+        return (validators.url(self.url)
+                and validators.length(self.url, max=255))
 
     def save(self):
         url = self.__normalized_url()
@@ -52,7 +52,6 @@ class Site:
                         INSERT INTO urls (name, created_at) VALUES (%s, %s)
                     """, (url, created_at, ))
                 conn.commit()
-
 
     def __normalized_url(self):
         parsed_url = urlparse(self.url)
