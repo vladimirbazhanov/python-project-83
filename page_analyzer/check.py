@@ -1,13 +1,15 @@
 import psycopg
 import os
+import requests
 from datetime import datetime
 
 
-class SiteCheck:
+class Check:
+    def __init__(self, url):
+        self.url = url
+        self.created_at = datetime.now()
+        self.errors = []
 
-    def __init__(self, url_id):
-        self.url_id = url_id
-        pass
 
     @staticmethod
     def find_by_url_id(url_id):
@@ -24,14 +26,17 @@ class SiteCheck:
 
         return result
 
-    def save(self):
-        created_at = datetime.now()
 
+    def perform(self):
+        response = requests.get(self.url.url)
+        self.save()
+
+    def save(self):
         with psycopg.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                         INSERT INTO url_checks (url_id, created_at)
                         VALUES (%s, %s)
-                    """, (self.url_id, created_at, ))
+                    """, (self.url.id, self.created_at, ))
                 conn.commit()

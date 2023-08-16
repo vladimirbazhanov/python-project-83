@@ -4,8 +4,8 @@ from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
 import psycopg
 
-from page_analyzer.site import Site
-from page_analyzer.site_check import SiteCheck
+from page_analyzer.url import Url
+from page_analyzer.check import Check
 
 load_dotenv()
 
@@ -18,29 +18,28 @@ def get_index():
     return render_template('index.html')
 
 
+@app.get('/urls')
+def get_urls():
+    urls = Url.all()
+    return render_template('urls.html', urls=urls)
+
+
 @app.route('/urls/<url_id>')
 def get_url(url_id):
-    url = Site.find(url_id)
-    url_checks = SiteCheck.find_by_url_id(url_id)
+    url = Url.find(url_id)
+    checks = url.get_checks()
 
-    return render_template('url.html', url=url, url_checks=url_checks)
+    return render_template('url.html', url=url, checks=checks)
 
 
 @app.post('/urls/<url_id>/checks')
 def post_checks(url_id):
-    url = Site.find(url_id)
+    url = Url.find(url_id)
 
-    site_check = SiteCheck(url_id)
-    site_check.save()
+    check = Check(url)
+    check.perform()
 
     return redirect(f'/urls/{url[0]}')
-
-
-@app.get('/urls')
-def get_urls():
-    urls = Site.all()
-
-    return render_template('urls.html', urls=urls)
 
 
 @app.post('/urls')
@@ -50,13 +49,13 @@ def post_urls():
         flash('Пожалуйста, введите адрес сайта!', 'warning')
         return redirect('/')
 
-    site = Site(url)
-    if not site.is_valid():
+    url = Url(url)
+    if not url.is_valid():
         flash('Адрес сайта некорректен, введите снова!', 'warning')
         return redirect('/')
 
     try:
-        site.save()
+        url.save()
     except psycopg.errors.UniqueViolation:
         flash('Сайт уже есть в базе данных!', 'warning')
         return redirect('/')

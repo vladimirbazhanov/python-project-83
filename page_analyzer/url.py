@@ -1,13 +1,22 @@
+import pdb
+
 import validators
 import psycopg
 import os
 from datetime import datetime
 from urllib.parse import urlparse
+from page_analyzer.check import Check
 
 
-class Site:
-    def __init__(self, url):
-        self.url = url
+class Url:
+    def __init__(self, id=None, name='', created_at=datetime.now()):
+        self.id = id
+        self.name = name
+        self.created_at = created_at
+        self.normalized_url = '://'.join(
+            [urlparse(self.name).scheme, urlparse(self.name).netloc]
+        )
+
 
     @staticmethod
     def all():
@@ -20,9 +29,13 @@ class Site:
                     ORDER BY created_at DESC
                     """
                 )
-                result = cur.fetchall()
+                results = cur.fetchall()
+                urls = list(map(Url.build, results))
+        return urls
 
-        return result
+    @ staticmethod
+    def build(params):
+        return Url(id=params[0], name=params[1], created_at=str(params[2]))
 
     @staticmethod
     def find(id):
@@ -34,25 +47,22 @@ class Site:
                     """, (id, )
                 )
                 result = cur.fetchone()
+        return Url.build(result)
 
-        return result
+
+    def get_checks(self):
+        return Check.find_by_url_id(url_id)
+
 
     def is_valid(self):
         return (validators.url(self.url)
                 and validators.length(self.url, max=255))
 
     def save(self):
-        url = self.__normalized_url()
-        created_at = datetime.now()
-
         with psycopg.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                         INSERT INTO urls (name, created_at) VALUES (%s, %s)
-                    """, (url, created_at, ))
+                    """, (self.normalized_url, self.created_at, ))
                 conn.commit()
-
-    def __normalized_url(self):
-        parsed_url = urlparse(self.url)
-        return '://'.join([parsed_url.scheme, parsed_url.netloc])

@@ -37,10 +37,10 @@
               {% for url in urls %}
               <tr>
                 <td>
-                  {{ url[0] }}
+                  {{ url.id }}
                 </td>
                 <td>
-                  <a href="/urls/{{ url[0] }}">{{ url[1] }}</a>
+                  <a href="/urls/{{ url.id }}">{{ url.name }}</a>
                 </td>
               </tr>
               {% endfor %}
