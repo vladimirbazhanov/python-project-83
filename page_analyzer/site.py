@@ -42,7 +42,7 @@ class Site:
 
 
     def save(self):
-        url = self.normalized_url()
+        url = self.__normalized_url()
         created_at = datetime.now()
 
         with psycopg.connect(os.environ['DATABASE_URL']) as conn:
@@ -53,6 +53,7 @@ class Site:
                     """, (url, created_at, ))
                 conn.commit()
 
-    def normalized_url(self):
+
+    def __normalized_url(self):
         parsed_url = urlparse(self.url)
         return '://'.join([parsed_url.scheme, parsed_url.netloc])

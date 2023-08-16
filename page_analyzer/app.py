@@ -30,7 +30,7 @@ def get_url(id):
 def post_checks(url_id):
     url = Site.find(url_id)
 
-    site_check = SiteCheck()
+    site_check = SiteCheck(url_id)
     site_check.save()
 
     return redirect(f'/urls/{url[0]}')
