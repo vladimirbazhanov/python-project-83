@@ -10,7 +10,7 @@ class Site:
         self.url = url
 
     def is_valid(self):
-        return validators.url(self.url)
+        return validators.url(self.url) and validators.length(self.url, max=255)
 
 
     def save(self):

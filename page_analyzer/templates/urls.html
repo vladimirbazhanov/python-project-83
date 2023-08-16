@@ -26,29 +26,8 @@
     </div>
     <div class="container p-4">
       <div class="row">
-        {% with messages = get_flashed_messages(with_categories=True) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
-                {{message}}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-        <div class="col-md-6 offset-md-3">
-          <h1>Анализатор страниц</h1>
-          <h3>Проверка SEO сайта:</h3>
-          <form action="/urls" method="post" class="">
-            <div class="row">
-              <div class="col-sm-8">
-                <input name='url' type="text" placeholder="https://example.com" class="form-control">
-              </div>
-              <div class="col-sm-4">
-                <input type="submit" class="btn btn-primary" value="Проверить!">
-              </div>
-            </div>
-          </form>
+        <div class="col-md-12">
+          <h1>Сайты</h1>
         </div>
       </div>
     </div>

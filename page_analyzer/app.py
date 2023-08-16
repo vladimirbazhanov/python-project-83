@@ -17,6 +17,11 @@ def get_index():
     return render_template('index.html')
 
 
+@app.get('/urls')
+def get_urls():
+    return render_template('urls.html')
+
+
 @app.post('/urls')
 def post_urls():
     url = request.form.get('url')
