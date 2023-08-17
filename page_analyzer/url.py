@@ -55,8 +55,8 @@ class Url:
 
 
     def is_valid(self):
-        return (validators.url(self.url)
-                and validators.length(self.url, max=255))
+        return (validators.url(self.name)
+                and validators.length(self.name, max=255))
 
     def save(self):
         with psycopg.connect(os.environ['DATABASE_URL']) as conn:

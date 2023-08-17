@@ -1,4 +1,5 @@
 import os
+import pdb
 
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
@@ -39,17 +40,20 @@ def post_checks(url_id):
     check = Check({'url': url})
     check.perform()
 
+    if check.errors:
+        flash(', '.join(check.errors), 'warning')
+
     return redirect(f'/urls/{url.id}')
 
 
 @app.post('/urls')
 def post_urls():
-    url = request.form.get('url')
-    if not url:
+    name = request.form.get('url')
+    if not name:
         flash('Пожалуйста, введите адрес сайта!', 'warning')
         return redirect('/')
 
-    url = Url(url)
+    url = Url(name=name)
     if not url.is_valid():
         flash('Адрес сайта некорректен, введите снова!', 'warning')
         return redirect('/')
