@@ -1,10 +1,9 @@
-import pdb
-
 import psycopg
 import os
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
+
 
 class Check:
     def __init__(self, params):
@@ -51,13 +50,7 @@ class Check:
             response = requests.get(self.url.name)
 
             if response.status_code == 200:
-                soup = BeautifulSoup(response.text)
-
-                self.title = soup.title.text if soup.title else 'Не найден'
-                self.h1 = soup.h1.text if soup.h1 else 'Не найден'
-                self.status_code = response.status_code
-                meta_description = soup.find('meta', {'name': 'description'})
-                self.description = meta_description.attrs['content'] if meta_description else 'Не найден'
+                self.__parse_response(response)
                 self.save()
             else:
                 self.errors.append('Произошла ошибка при проверке')
@@ -71,7 +64,14 @@ class Check:
                 cur.execute(
                     """
                         INSERT INTO
-                        url_checks (url_id, status_code, title, h1, description, created_at)
+                        url_checks (
+                            url_id,
+                            status_code,
+                            title,
+                            h1,
+                            description,
+                            created_at
+                            )
                         VALUES (%s, %s, %s, %s, %s, %s)
                     """, (
                         self.url.id,
@@ -82,3 +82,13 @@ class Check:
                         self.created_at,)
                 )
                 conn.commit()
+
+    def __parse_response(self, response):
+        soup = BeautifulSoup(response.text)
+
+        self.title = soup.title.text if soup.title else 'Не найден'
+        self.h1 = soup.h1.text if soup.h1 else 'Не найден'
+        self.status_code = response.status_code
+
+        meta = soup.find('meta', {'name': 'description'})
+        self.description = meta.attrs['content'] if meta else 'Не найден'
