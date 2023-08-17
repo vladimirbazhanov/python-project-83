@@ -59,7 +59,7 @@ def post_urls():
     try:
         url.save()
 
-    except psycopg2.DatabaseError:
+    except psycopg2.Error:
         flash('Сайт уже есть в базе данных!', 'warning')
         return redirect('/')
 
