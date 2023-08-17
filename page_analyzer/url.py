@@ -1,5 +1,3 @@
-import pdb
-
 import validators
 import psycopg
 import os
@@ -16,7 +14,6 @@ class Url:
         self.normalized_url = '://'.join(
             [urlparse(self.name).scheme, urlparse(self.name).netloc]
         )
-
 
     @staticmethod
     def all():
@@ -49,10 +46,8 @@ class Url:
                 result = cur.fetchone()
         return Url.build(result)
 
-
     def get_checks(self):
         return Check.find_by_url_id(self.id)
-
 
     def is_valid(self):
         return (validators.url(self.name)
@@ -63,6 +58,7 @@ class Url:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                        INSERT INTO urls (name, created_at) VALUES (%s, %s)
+                        INSERT INTO urls (name, created_at)
+                        VALUES (%s, %s)
                     """, (self.normalized_url, self.created_at, ))
                 conn.commit()

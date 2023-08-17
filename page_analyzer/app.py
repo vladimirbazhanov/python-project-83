@@ -1,9 +1,7 @@
 import os
-import pdb
-
+import psycopg
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
-import psycopg
 
 from page_analyzer.url import Url
 from page_analyzer.check import Check

@@ -1,5 +1,3 @@
-import pdb
-
 import psycopg
 import os
 import requests
@@ -13,14 +11,17 @@ class Check:
         self.created_at = params.get('created_at', datetime.now())
 
         self.url = params.get('url')
-
         self.errors = []
-
 
     @staticmethod
     def build(params):
-        return Check({'id': params[0], 'status_code': params[1], 'created_at': params[2]})
-
+        return Check(
+            {
+                'id': params[0],
+                'status_code': params[1],
+                'created_at': params[2]
+            }
+        )
 
     @staticmethod
     def find_by_url_id(url_id):
@@ -36,7 +37,6 @@ class Check:
                 results = cur.fetchall()
                 checks = list(map(Check.build, results))
         return checks
-
 
     def perform(self):
         try:
@@ -56,7 +56,8 @@ class Check:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                        INSERT INTO url_checks (url_id, status_code, created_at)
+                        INSERT INTO
+                        url_checks (url_id, status_code, created_at)
                         VALUES (%s, %s, %s)
                     """, (self.url.id, self.status_code, self.created_at, ))
                 conn.commit()
