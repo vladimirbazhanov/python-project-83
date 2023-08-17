@@ -1,5 +1,5 @@
 import validators
-import psycopg
+import psycopg2
 import os
 from datetime import datetime
 from urllib.parse import urlparse
@@ -17,7 +17,7 @@ class Url:
 
     @staticmethod
     def all():
-        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -36,7 +36,7 @@ class Url:
 
     @staticmethod
     def find(id):
-        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -54,7 +54,7 @@ class Url:
                 and validators.length(self.name, max=255))
 
     def save(self):
-        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """

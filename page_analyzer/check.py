@@ -1,4 +1,4 @@
-import psycopg
+import psycopg2
 import os
 import requests
 from datetime import datetime
@@ -32,7 +32,7 @@ class Check:
 
     @staticmethod
     def find_by_url_id(url_id):
-        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -59,7 +59,7 @@ class Check:
             self.errors.append(str(ex))
 
     def save(self):
-        with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """

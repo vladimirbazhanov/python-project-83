@@ -1,5 +1,5 @@
 import os
-import psycopg
+import psycopg2
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
 
@@ -59,7 +59,7 @@ def post_urls():
     try:
         url.save()
 
-    except psycopg.errors.UniqueViolation:
+    except psycopg2.errors.UniqueViolation:
         flash('Сайт уже есть в базе данных!', 'warning')
         return redirect('/')
 
