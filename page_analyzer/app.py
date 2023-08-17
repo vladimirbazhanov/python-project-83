@@ -52,7 +52,7 @@ def post_urls():
         flash('Пожалуйста, введите адрес сайта!', 'warning')
         return redirect('/')
 
-    url = Url(name=name)
+    url = Url({'name': name})
     if not url.is_valid():
         flash('Адрес сайта некорректен, введите снова!', 'warning')
         return render_template('index.html'), 422
