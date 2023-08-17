@@ -40,7 +40,8 @@ def post_checks(url_id):
 
     if check.errors:
         flash(', '.join(check.errors), 'warning')
-
+    else:
+        flash('Страница успешно проверена', 'info')
     return redirect(f'/urls/{url.id}')
 
 
