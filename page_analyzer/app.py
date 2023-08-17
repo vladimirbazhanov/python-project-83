@@ -60,8 +60,8 @@ def post_urls():
         url.save()
 
     except psycopg2.Error:
-        flash('Сайт уже есть в базе данных!', 'warning')
+        flash('Страница уже существует', 'warning')
         return redirect('/')
 
     flash('Страница успешно добавлена', 'info')
-    return render_template('index.html')
+    return redirect(f'/urls/{url.id}')

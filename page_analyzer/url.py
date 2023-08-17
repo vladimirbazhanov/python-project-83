@@ -60,5 +60,6 @@ class Url:
                     """
                         INSERT INTO urls (name, created_at)
                         VALUES (%s, %s)
+                        RETURNING id
                     """, (self.normalized_url, self.created_at, ))
-                conn.commit()
+                self.id = cur.fetchone()[0]
