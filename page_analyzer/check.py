@@ -1,13 +1,18 @@
+import pdb
+
 import psycopg
 import os
 import requests
 from datetime import datetime
-
+from bs4 import BeautifulSoup
 
 class Check:
     def __init__(self, params):
         self.id = params.get('id')
         self.status_code = params.get('status_code')
+        self.title = params.get('title')
+        self.h1 = params.get('h1')
+        self.description = params.get('description')
         self.created_at = params.get('created_at', datetime.now())
 
         self.url = params.get('url')
@@ -19,7 +24,10 @@ class Check:
             {
                 'id': params[0],
                 'status_code': params[1],
-                'created_at': params[2]
+                'title': params[2],
+                'h1': params[3],
+                'description': params[4],
+                'created_at': params[5]
             }
         )
 
@@ -29,7 +37,7 @@ class Check:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, status_code, created_at
+                    SELECT id, status_code, title, h1, description, created_at
                     FROM url_checks
                     WHERE url_id = %s
                     """, (url_id, )
@@ -43,7 +51,13 @@ class Check:
             response = requests.get(self.url.name)
 
             if response.status_code == 200:
+                soup = BeautifulSoup(response.text)
+
+                self.title = soup.title.text if soup.title else 'Не найден'
+                self.h1 = soup.h1.text if soup.h1 else 'Не найден'
                 self.status_code = response.status_code
+                meta_description = soup.find('meta', {'name': 'description'})
+                self.description = meta_description.attrs['content'] if meta_description else 'Не найден'
                 self.save()
             else:
                 self.errors.append('Произошла ошибка при проверке')
@@ -57,7 +71,14 @@ class Check:
                 cur.execute(
                     """
                         INSERT INTO
-                        url_checks (url_id, status_code, created_at)
-                        VALUES (%s, %s, %s)
-                    """, (self.url.id, self.status_code, self.created_at, ))
+                        url_checks (url_id, status_code, title, h1, description, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, (
+                        self.url.id,
+                        self.status_code,
+                        self.title,
+                        self.h1,
+                        self.description,
+                        self.created_at,)
+                )
                 conn.commit()

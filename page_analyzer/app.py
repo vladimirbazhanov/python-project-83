@@ -58,6 +58,7 @@ def post_urls():
 
     try:
         url.save()
+
     except psycopg.errors.UniqueViolation:
         flash('Сайт уже есть в базе данных!', 'warning')
         return redirect('/')
