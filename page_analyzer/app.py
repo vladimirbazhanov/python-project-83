@@ -55,7 +55,7 @@ def post_urls():
     url = Url(name=name)
     if not url.is_valid():
         flash('Адрес сайта некорректен, введите снова!', 'warning')
-        return redirect('/')
+        return render_template('index.html'), 422
 
     try:
         url.save()
