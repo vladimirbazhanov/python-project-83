@@ -5,10 +5,16 @@ from datetime import datetime
 
 
 class Check:
-    def __init__(self, url):
-        self.url = url
-        self.created_at = datetime.now()
+    def __init__(self, params):
+        self.id = params.get('id')
+        self.url = params.get('url')
+        self.created_at = params.get('created_at', datetime.now())
         self.errors = []
+
+
+    @staticmethod
+    def build(params):
+        return Check({'id': params[0], 'created_at': params[1]})
 
 
     @staticmethod
@@ -22,13 +28,13 @@ class Check:
                     WHERE url_id = %s
                     """, (url_id, )
                 )
-                result = cur.fetchall()
-
-        return result
+                results = cur.fetchall()
+                checks = list(map(Check.build, results))
+        return checks
 
 
     def perform(self):
-        response = requests.get(self.url.url)
+        response = requests.get(self.url.name)
         self.save()
 
     def save(self):

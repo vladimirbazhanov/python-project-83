@@ -36,10 +36,10 @@ def get_url(url_id):
 def post_checks(url_id):
     url = Url.find(url_id)
 
-    check = Check(url)
+    check = Check({'url': url})
     check.perform()
 
-    return redirect(f'/urls/{url[0]}')
+    return redirect(f'/urls/{url.id}')
 
 
 @app.post('/urls')

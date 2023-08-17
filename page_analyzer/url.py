@@ -51,7 +51,7 @@ class Url:
 
 
     def get_checks(self):
-        return Check.find_by_url_id(url_id)
+        return Check.find_by_url_id(self.id)
 
 
     def is_valid(self):
