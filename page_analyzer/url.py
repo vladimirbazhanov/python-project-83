@@ -7,10 +7,11 @@ from page_analyzer.check import Check
 
 
 class Url:
-    def __init__(self, id=None, name='', created_at=datetime.now()):
-        self.id = id
-        self.name = name
-        self.created_at = created_at
+    def __init__(self, params):
+        self.id = params.get('id')
+        self.name = params.get('name', '')
+        self.created_at = params.get('created_at', datetime.now())
+        self.status_code = params.get('status_code')
         self.normalized_url = '://'.join(
             [urlparse(self.name).scheme, urlparse(self.name).netloc]
         )
@@ -21,9 +22,13 @@ class Url:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, name, created_at
-                    FROM urls
-                    ORDER BY created_at DESC
+                    SELECT urls.id,
+                           urls.name,
+                           MAX(url_checks.created_at),
+                           url_checks.status_code
+                    FROM url_checks
+                    INNER JOIN urls ON url_checks.url_id = urls.id
+                    GROUP BY urls.id, urls.name, url_checks.status_code;
                     """
                 )
                 results = cur.fetchall()
@@ -32,7 +37,12 @@ class Url:
 
     @ staticmethod
     def build(params):
-        return Url(id=params[0], name=params[1], created_at=str(params[2]))
+        return Url({
+            'id': params[0],
+            'name': params[1],
+            'created_at': str(params[2]),
+            'status_code': params[3] if len(params) == 4 else ''
+        })
 
     @staticmethod
     def find(id):

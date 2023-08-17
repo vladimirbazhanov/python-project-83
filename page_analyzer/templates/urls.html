@@ -42,6 +42,8 @@
             <thead>
               <th>ID</th>
               <th>Адрес</th>
+              <th>Последняя проверка</th>
+              <th>Код ответа</th>
             </thead>
             <tbody>
               {% for url in urls %}
@@ -51,6 +53,12 @@
                 </td>
                 <td>
                   <a href="/urls/{{ url.id }}">{{ url.name }}</a>
+                </td>
+                <td>
+                  {{ url.created_at }}
+                </td>
+                <td>
+                  {{ url.status_code }}
                 </td>
               </tr>
               {% endfor %}
