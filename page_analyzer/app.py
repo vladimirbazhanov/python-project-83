@@ -59,7 +59,7 @@ def post_urls():
         url = Url({'name': name})
 
     if not url.is_valid():
-        flash('Адрес сайта некорректен, введите снова!', 'warning')
+        flash('Некорректный URL', 'warning')
         return render_template('index.html'), 422
 
     url.save()
