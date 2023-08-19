@@ -16,6 +16,8 @@ class Url:
             [urlparse(self.name).scheme, urlparse(self.name).netloc]
         )
 
+        self.errors = []
+
     @staticmethod
     def all():
         with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
@@ -27,7 +29,7 @@ class Url:
                            MAX(url_checks.created_at),
                            url_checks.status_code
                     FROM url_checks
-                    INNER JOIN urls ON url_checks.url_id = urls.id
+                    RIGHT JOIN urls ON url_checks.url_id = urls.id
                     GROUP BY urls.id, urls.name, url_checks.status_code;
                     """
                 )
@@ -45,7 +47,7 @@ class Url:
         })
 
     @staticmethod
-    def find(id):
+    def find_by_id(id):
         with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -56,6 +58,17 @@ class Url:
                 result = cur.fetchone()
         return Url.build(result)
 
+    def find_by_name(name):
+        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, created_at FROM urls WHERE name = %s
+                    """, (name, )
+                )
+                result = cur.fetchone()
+        return Url.build(result) if result else None
+
     def get_checks(self):
         return Check.find_by_url_id(self.id)
 
@@ -64,12 +77,15 @@ class Url:
                 and validators.length(self.name, max=255))
 
     def save(self):
-        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                        INSERT INTO urls (name, created_at)
-                        VALUES (%s, %s)
-                        RETURNING id
-                    """, (self.normalized_url, self.created_at, ))
-                self.id = cur.fetchone()[0]
+        try:
+            with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                            INSERT INTO urls (name, created_at)
+                            VALUES (%s, %s)
+                            RETURNING id
+                        """, (self.normalized_url, self.created_at, ))
+                    self.id = cur.fetchone()[0]
+        except psycopg2.Error:
+            self.errors.append('Страница уже существует')

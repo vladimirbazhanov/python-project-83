@@ -1,5 +1,4 @@
 import os
-import psycopg2
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
 
@@ -25,7 +24,7 @@ def get_urls():
 
 @app.route('/urls/<url_id>')
 def get_url(url_id):
-    url = Url.find(url_id)
+    url = Url.find_by_id(url_id)
     checks = url.get_checks()
 
     return render_template('url.html', url=url, checks=checks)
@@ -33,7 +32,7 @@ def get_url(url_id):
 
 @app.post('/urls/<url_id>/checks')
 def post_checks(url_id):
-    url = Url.find(url_id)
+    url = Url.find_by_id(url_id)
 
     check = Check({'url': url})
     check.perform()
@@ -52,17 +51,21 @@ def post_urls():
         flash('Пожалуйста, введите адрес сайта!', 'warning')
         return redirect('/')
 
-    url = Url({'name': name})
+    url = Url.find_by_name(name)
+    if url:
+        flash('Страница уже существует', 'info')
+        return redirect(f'/urls/{url.id}')
+    else:
+        url = Url({'name': name})
+
     if not url.is_valid():
         flash('Адрес сайта некорректен, введите снова!', 'warning')
         return render_template('index.html'), 422
 
-    try:
-        url.save()
-
-    except psycopg2.Error:
-        flash('Страница уже существует', 'warning')
-        return redirect('/')
-
-    flash('Страница успешно добавлена', 'info')
-    return redirect(f'/urls/{url.id}')
+    url.save()
+    if url.errors:
+        flash(', '.join(url.errors), 'warning')
+        return redirect('/urls')
+    else:
+        flash('Страница успешно добавлена', 'info')
+        return redirect(f'/urls/{url.id}')
