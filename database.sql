@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS
         name text,
         created_at timestamp
          );
-CREATE UNIQUE INDEX IF NOT EXISTS name_idx ON urls(name);
+CREATE INDEX IF NOT EXISTS name_idx ON urls(name);
 
 CREATE TABLE IF NOT EXISTS
     url_checks (
