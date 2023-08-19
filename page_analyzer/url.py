@@ -12,11 +12,13 @@ class Url:
         self.name = params.get('name', '')
         self.created_at = params.get('created_at', datetime.now())
         self.status_code = params.get('status_code')
-        self.normalized_url = '://'.join(
-            [urlparse(self.name).scheme, urlparse(self.name).netloc]
-        )
+        self.normalized_url = Url.normalized_url(self.name)
 
         self.errors = []
+
+    @staticmethod
+    def normalized_url(url):
+        return '://'.join([urlparse(url).scheme, urlparse(url).netloc])
 
     @staticmethod
     def all():
@@ -59,6 +61,8 @@ class Url:
         return Url.build(result)
 
     def find_by_name(name):
+        name = Url.normalized_url(name)
+
         with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -85,7 +89,8 @@ class Url:
                             INSERT INTO urls (name, created_at)
                             VALUES (%s, %s)
                             RETURNING id
-                        """, (self.normalized_url, self.created_at, ))
+                        """,
+                        (Url.normalized_url(self.name), self.created_at, ))
                     self.id = cur.fetchone()[0]
         except psycopg2.Error:
             self.errors.append('Страница уже существует')
