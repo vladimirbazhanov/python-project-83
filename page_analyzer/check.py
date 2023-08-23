@@ -1,6 +1,5 @@
-import psycopg2
-import os
 import requests
+import page_analyzer.app as app
 from datetime import datetime
 from bs4 import BeautifulSoup
 
@@ -32,17 +31,18 @@ class Check:
 
     @staticmethod
     def find_by_url_id(url_id):
-        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT id, status_code, title, h1, description, created_at
-                    FROM url_checks
-                    WHERE url_id = %s
-                    """, (url_id, )
-                )
-                results = cur.fetchall()
-                checks = list(map(Check.build, results))
+        conn = app.connections_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, status_code, title, h1, description, created_at
+                FROM url_checks
+                WHERE url_id = %s
+                """, (url_id, )
+            )
+            results = cur.fetchall()
+            checks = list(map(Check.build, results))
+        app.connections_pool.putconn(conn)
         return checks
 
     def perform(self):
@@ -59,29 +59,30 @@ class Check:
             self.errors.append(str(ex))
 
     def save(self):
-        with psycopg2.connect(os.environ['DATABASE_URL']) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                        INSERT INTO
-                        url_checks (
-                            url_id,
-                            status_code,
-                            title,
-                            h1,
-                            description,
-                            created_at
-                            )
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                    """, (
-                        self.url.id,
-                        self.status_code,
-                        self.title,
-                        self.h1,
-                        self.description,
-                        self.created_at,)
-                )
-                conn.commit()
+        conn = app.connections_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                    INSERT INTO
+                    url_checks (
+                        url_id,
+                        status_code,
+                        title,
+                        h1,
+                        description,
+                        created_at
+                        )
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (
+                    self.url.id,
+                    self.status_code,
+                    self.title,
+                    self.h1,
+                    self.description,
+                    self.created_at,)
+            )
+            conn.commit()
+        app.connections_pool.putconn(conn)
 
     def __parse_response(self, response):
         soup = BeautifulSoup(response.text)

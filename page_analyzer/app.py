@@ -1,7 +1,7 @@
 import os
+import psycopg2
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
-
 from page_analyzer.url import Url
 from page_analyzer.check import Check
 
@@ -9,6 +9,11 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
+
+connections_pool = psycopg2.pool.SimpleConnectionPool(
+    1, 5, os.environ['DATABASE_URL']
+)
+connection = connections_pool.getconn()
 
 
 @app.route('/')

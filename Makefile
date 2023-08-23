@@ -7,7 +7,7 @@ build:
 check: lint test
 
 lint:
-	poetry run flake8
+	poetry run flake8 ./page_analyzer
 
 test:
 	poetry run pytest
