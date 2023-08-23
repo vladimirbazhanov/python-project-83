@@ -1,4 +1,5 @@
 import os
+
 from psycopg2 import pool
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
@@ -30,9 +31,12 @@ def get_urls():
 @app.route('/urls/<url_id>')
 def get_url(url_id):
     url = Url.find_by_id(url_id)
-    checks = url.get_checks()
-
-    return render_template('url.html', url=url, checks=checks)
+    if url:
+        checks = url.get_checks()
+        return render_template('url.html', url=url, checks=checks)
+    else:
+        flash('Страница не существует', 'info')
+        return redirect('/')
 
 
 @app.post('/urls/<url_id>/checks')
@@ -68,6 +72,7 @@ def post_urls():
         return render_template('index.html'), 422
 
     url.save()
+
     if url.errors:
         flash(', '.join(url.errors), 'warning')
         return redirect('/urls')

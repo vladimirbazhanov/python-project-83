@@ -60,7 +60,7 @@ class Url:
             result = cur.fetchone()
         app.connections_pool.putconn(conn)
 
-        return Url.build(result)
+        return Url.build(result) if result else None
 
     def find_by_name(name):
         name = Url.normalized_url(name)
@@ -95,6 +95,7 @@ class Url:
                     """,
                     (Url.normalized_url(self.name), self.created_at, ))
                 self.id = cur.fetchone()[0]
+                conn.commit()
             app.connections_pool.putconn(conn)
         except psycopg2.Error:
             self.errors.append('Страница уже существует')
