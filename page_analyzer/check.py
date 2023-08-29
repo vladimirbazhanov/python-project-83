@@ -1,7 +1,7 @@
 import requests
-import page_analyzer.app as app
 from datetime import datetime
 from bs4 import BeautifulSoup
+import page_analyzer.app as app
 
 
 class Check:
@@ -31,18 +31,17 @@ class Check:
 
     @staticmethod
     def find_by_url_id(url_id):
-        conn = app.connections_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, status_code, title, h1, description, created_at
-                FROM url_checks
-                WHERE url_id = %s
-                """, (url_id, )
-            )
-            results = cur.fetchall()
-            checks = list(map(Check.build, results))
-        app.connections_pool.putconn(conn)
+        with app.connections_pool as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, status_code, title, h1, description, created_at
+                    FROM url_checks
+                    WHERE url_id = %s
+                    """, (url_id, )
+                )
+                results = cur.fetchall()
+                checks = list(map(Check.build, results))
         return checks
 
     def perform(self):
@@ -59,30 +58,29 @@ class Check:
             self.errors.append(str(ex))
 
     def save(self):
-        conn = app.connections_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                    INSERT INTO
-                    url_checks (
-                        url_id,
-                        status_code,
-                        title,
-                        h1,
-                        description,
-                        created_at
+        with app.connections_pool as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                        INSERT INTO
+                        url_checks (
+                          url_id,
+                          status_code,
+                          title,
+                          h1,
+                          description,
+                          created_at
                         )
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, (
-                    self.url.id,
-                    self.status_code,
-                    self.title,
-                    self.h1,
-                    self.description,
-                    self.created_at,)
-            )
-            conn.commit()
-        app.connections_pool.putconn(conn)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, (
+                        self.url.id,
+                        self.status_code,
+                        self.title,
+                        self.h1,
+                        self.description,
+                        self.created_at,)
+                )
+                conn.commit()
 
     def __parse_response(self, response):
         soup = BeautifulSoup(response.text)

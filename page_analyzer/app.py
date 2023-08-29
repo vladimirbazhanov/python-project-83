@@ -1,20 +1,17 @@
 import os
 
-from psycopg2 import pool
 from flask import Flask, request, flash, redirect, render_template
 from dotenv import load_dotenv
 from page_analyzer.url import Url
 from page_analyzer.check import Check
+from page_analyzer.connections_pool import ConnectionsPool
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ['SECRET_KEY']
 
-connections_pool = pool.SimpleConnectionPool(
-    1, 5, os.environ['DATABASE_URL']
-)
-connection = connections_pool.getconn()
+connections_pool = ConnectionsPool()
 
 
 @app.route('/')

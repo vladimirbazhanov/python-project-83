@@ -21,22 +21,21 @@ class Url:
 
     @staticmethod
     def all():
-        conn = app.connections_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT urls.id,
-                       urls.name,
-                       MAX(url_checks.created_at),
-                       url_checks.status_code
-                FROM url_checks
-                RIGHT JOIN urls ON url_checks.url_id = urls.id
-                GROUP BY urls.id, urls.name, url_checks.status_code;
-                """
-            )
-            results = cur.fetchall()
-            urls = list(map(Url.build, results))
-        app.connections_pool.putconn(conn)
+        with app.connections_pool as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT urls.id,
+                           urls.name,
+                           MAX(url_checks.created_at),
+                           url_checks.status_code
+                    FROM url_checks
+                    RIGHT JOIN urls ON url_checks.url_id = urls.id
+                    GROUP BY urls.id, urls.name, url_checks.status_code;
+                    """
+                )
+                results = cur.fetchall()
+                urls = list(map(Url.build, results))
         return urls
 
     @ staticmethod
@@ -50,30 +49,26 @@ class Url:
 
     @staticmethod
     def find_by_id(id):
-        conn = app.connections_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, name, created_at FROM urls WHERE id = %s
-                """, (id, )
-            )
-            result = cur.fetchone()
-        app.connections_pool.putconn(conn)
-
+        with app.connections_pool as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, created_at FROM urls WHERE id = %s
+                    """, (id, )
+                )
+                result = cur.fetchone()
         return Url.build(result) if result else None
 
     def find_by_name(name):
         name = Url.normalized_url(name)
-
-        conn = app.connections_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, name, created_at FROM urls WHERE name = %s
-                """, (name, )
-            )
-            result = cur.fetchone()
-        app.connections_pool.putconn(conn)
+        with app.connections_pool as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, created_at FROM urls WHERE name = %s
+                    """, (name, )
+                )
+                result = cur.fetchone()
         return Url.build(result) if result else None
 
     def get_checks(self):
@@ -85,17 +80,16 @@ class Url:
 
     def save(self):
         try:
-            conn = app.connections_pool.getconn()
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                        INSERT INTO urls (name, created_at)
-                        VALUES (%s, %s)
-                        RETURNING id
-                    """,
-                    (Url.normalized_url(self.name), self.created_at, ))
-                self.id = cur.fetchone()[0]
-                conn.commit()
-            app.connections_pool.putconn(conn)
+            with app.connections_pool as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                            INSERT INTO urls (name, created_at)
+                            VALUES (%s, %s)
+                            RETURNING id
+                        """,
+                        (Url.normalized_url(self.name), self.created_at, ))
+                    self.id = cur.fetchone()[0]
+                    conn.commit()
         except psycopg2.Error:
             self.errors.append('Страница уже существует')
